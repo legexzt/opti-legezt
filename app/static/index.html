@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Academic Performance Studio & Exact Report Generator</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+
+  <!-- Three.js and Chart.js CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- 3D Canvas Background -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <div class="app-wrapper">
+    
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="nav-brand">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Academic Report Studio</h1>
+          <p>Lords Institute Exact Template Generator • 15-List Order • 3-Tier Classifier</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="upload">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload & Parse
+        </button>
+        <button class="nav-tab" data-tab="dashboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          3D Dashboard
+        </button>
+        <button class="nav-tab" data-tab="editor">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Student Master
+        </button>
+        <button class="nav-tab" data-tab="reports">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Official Reports
+        </button>
+      </nav>
+
+      <!-- Top Right Actions -->
+      <div class="nav-actions">
+        <button id="resetSessionBtn" class="btn btn-secondary btn-sm" title="Clear all loaded files & reset">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Reset / Clear All
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('reports')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          View Reports
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- ================= TAB 1: UPLOAD & SMART PARSER ================= -->
+      <section id="tab-upload" class="tab-pane active">
+        <div class="glass-card" style="margin-bottom: 1.5rem;">
+          <div style="margin-bottom: 1.25rem;">
+            <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 4px;">Universal Marksheet & CSV Ingestion Engine</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">
+              Upload any university marksheet, CIE internal evaluation sheet, or semester grade CSV/Excel files. The smart engine automatically recognizes columns, merges records on Roll Number, and builds institutional reports.
+            </p>
+          </div>
+
+          <!-- Drag and Drop Multiple Upload Box -->
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" multiple accept=".xlsx, .xls, .csv" style="display: none;" />
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 6px;">Drag & Drop your CSV / Excel marksheets here</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Supports single or multiple CSVs/Excels (CIE Internal Marks + Semester Grade Sheets)</p>
+            <button class="btn btn-primary" type="button" onclick="document.getElementById('fileInput').click()">Browse Local CSV / Excel Files</button>
+          </div>
+
+          <!-- Uploaded Files Tray -->
+          <div id="uploadedFilesTray" class="multi-files-tray" style="display: none;"></div>
+        </div>
+
+        <!-- Sheet Selector & Metadata Inspector -->
+        <div class="grid-2">
+          <!-- Multi-Sheet Selector -->
+          <div class="glass-card" id="sheetSelectContainer" style="display: none;">
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Active Workbook Subject Sheet</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">This Excel file contains multiple subject sheets. Select the subject you wish to generate reports for:</p>
+            <select id="sheetSelect" class="select-control" style="font-size: 0.95rem; font-weight: 600;"></select>
+          </div>
+
+          <!-- Detected Metadata Card -->
+          <div class="glass-card">
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Official Template Parameters</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Pre-configured to match the institutional template layout:</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem;">
+              <div><span style="color:var(--text-muted);">Institution:</span> <b>LORDS INST. OF ENGG & TECH</b></div>
+              <div><span style="color:var(--text-muted);">A.Y:</span> <b>2024-25</b></div>
+              <div><span style="color:var(--text-muted);">Course:</span> <b>PYTHON PROGRAMING</b></div>
+              <div><span style="color:var(--text-muted);">Class / Sem:</span> <b>Class: II/C • Sem: III</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: 3D PERFORMANCE DASHBOARD ================= -->
+      <section id="tab-dashboard" class="tab-pane">
+        <!-- Top Metrics Row -->
+        <div class="grid-4" style="margin-bottom: 1.5rem;">
+          <div class="glass-card metric-card">
+            <div class="metric-icon total">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="metric-info">
+              <h3 id="metricTotalStudents">0</h3>
+              <p>Total Student Cohort</p>
+            </div>
+          </div>
+
+          <div class="glass-card metric-card">
+            <div class="metric-icon adv">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="metric-info">
+              <h3 id="metricAdvCount" style="color: var(--advanced);">0 (0%)</h3>
+              <p>Advanced Learners (Top)</p>
+            </div>
+          </div>
+
+          <div class="glass-card metric-card">
+            <div class="metric-icon avg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+            </div>
+            <div class="metric-info">
+              <h3 id="metricAvgCount" style="color: var(--average);">0 (0%)</h3>
+              <p>Average / Moderate</p>
+            </div>
+          </div>
+
+          <div class="glass-card metric-card">
+            <div class="metric-icon slow">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="metric-info">
+              <h3 id="metricSlowCount" style="color: var(--slow);">0 (0%)</h3>
+              <p>Slow / Weak Learners</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid-2" style="margin-bottom: 1.5rem;">
+          <div class="glass-card" style="height: 340px;">
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary);"></span>
+              3-Tier Student Cohort Distribution
+            </h3>
+            <div style="height: 260px; position: relative;">
+              <canvas id="tierDonutChart"></canvas>
+            </div>
+          </div>
+
+          <div class="glass-card" style="height: 340px;">
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--average);"></span>
+              Academic Score & CGPA Range Breakdown
+            </h3>
+            <div style="height: 260px; position: relative;">
+              <canvas id="scoreDistChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Insights Columns -->
+        <div class="grid-2">
+          <!-- Top Rankers Spotlight -->
+          <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 1.05rem; font-weight: 600; color: #34d399; display: flex; align-items: center; gap: 8px;">
+                🌟 Top 15 Advanced Learners
+              </h3>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Enrichment Program Candidates</span>
+            </div>
+            <div id="topPerformersList"></div>
+          </div>
+
+          <!-- Slow Learners Remedial Alert -->
+          <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 1.05rem; font-weight: 600; color: #fb7185; display: flex; align-items: center; gap: 8px;">
+                ⚠️ 15 Slow Learners for Remedial Focus
+              </h3>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Backlogs & Low CIE Scores</span>
+            </div>
+            <div id="slowFocusList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: STUDENT MASTER & LIVE EDITOR ================= -->
+      <section id="tab-editor" class="tab-pane">
+        <div class="glass-card" style="margin-bottom: 1.25rem; padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm filter-btn" data-filter="all">All Records</button>
+              <button class="btn btn-secondary btn-sm filter-btn" data-filter="advanced">🌟 Advanced Only</button>
+              <button class="btn btn-secondary btn-sm filter-btn" data-filter="average">🔹 Average Only</button>
+              <button class="btn btn-secondary btn-sm filter-btn" data-filter="slow">⚠️ Slow Only</button>
+              <button class="btn btn-secondary btn-sm filter-btn" data-filter="backlogs">🔴 Backlogs</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="tableSearchInput" class="input-control" placeholder="Search by name or roll..." style="width: 220px; padding: 0.4rem 0.8rem; font-size: 0.8rem;" />
+              <button id="addNewStudentBtn" class="btn btn-secondary btn-sm">+ Add Student</button>
+              <button id="batchAssignBtn" class="btn btn-secondary btn-sm">⚡ Auto-Assign Actions</button>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 15px; flex-wrap: wrap; font-size: 0.8rem;">
+            <span style="font-weight: 600; color: var(--text-muted);">Adjust Cutoff Rules:</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>Adv CGPA &ge;</span>
+              <input type="number" id="advCgpaInput" step="0.1" value="7.5" style="width: 55px; padding: 3px 6px; background: rgba(15,23,42,0.8); border: 1px solid var(--border-subtle); color: #fff; border-radius: 4px;" />
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>Adv CIE &ge;</span>
+              <input type="number" id="advCieInput" step="1" value="15" style="width: 50px; padding: 3px 6px; background: rgba(15,23,42,0.8); border: 1px solid var(--border-subtle); color: #fff; border-radius: 4px;" />
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>Slow CGPA &lt;</span>
+              <input type="number" id="slowCgpaInput" step="0.1" value="6.0" style="width: 55px; padding: 3px 6px; background: rgba(15,23,42,0.8); border: 1px solid var(--border-subtle); color: #fff; border-radius: 4px;" />
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>Slow CIE &lt;</span>
+              <input type="number" id="slowCieInput" step="1" value="10" style="width: 50px; padding: 3px 6px; background: rgba(15,23,42,0.8); border: 1px solid var(--border-subtle); color: #fff; border-radius: 4px;" />
+            </div>
+            <button id="applyThresholdsBtn" class="btn btn-primary btn-sm" style="padding: 3px 10px;">Apply Cutoffs</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 40px; text-align: center;">#</th>
+                <th style="width: 140px;">Roll / HT No</th>
+                <th style="width: 220px;">Student Name</th>
+                <th style="width: 90px; text-align: center;">CIE Marks</th>
+                <th style="width: 90px; text-align: center;">CGPA</th>
+                <th style="width: 120px;">Performance Tier</th>
+                <th>Observation Remarks</th>
+                <th>Action Plan / Strategy</th>
+                <th style="width: 60px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentTableBody">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: OFFICIAL REPORTS & EXPORTS ================= -->
+      <section id="tab-reports" class="tab-pane active">
+        
+        <!-- Metadata Config & Action Bar -->
+        <div class="glass-card" style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 1.25rem;">
+            <div>
+              <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 2px;">Official Institutional Report Studio</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Formatted with College Logo, 15 List Order, and 3 distinct page sections (Previous Sem Result, Faculty Observation, CIE 1 Marks).</p>
+            </div>
+
+            <!-- Download Action Buttons -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button id="downloadPdfBtn" class="btn btn-danger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                Download PDF
+              </button>
+              <button id="downloadDocxBtn" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Download Word (.docx)
+              </button>
+              <button id="exportExcelBtn" class="btn btn-success">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                Export Excel
+              </button>
+              <button id="printReportBtn" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print
+              </button>
+            </div>
+          </div>
+
+          <!-- Report Metadata Form -->
+          <div class="grid-3" style="font-size: 0.85rem;">
+            <div>
+              <label style="color: var(--text-muted); display: block; margin-bottom: 4px;">Institution Name</label>
+              <input type="text" id="metaInstitution" class="input-control" value="LORDS INSTITUTE OF ENGINEERING AND TECHNOLOGY" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); display: block; margin-bottom: 4px;">Department</label>
+              <input type="text" id="metaDepartment" class="input-control" value="Department of Computer Science and Engineering" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); display: block; margin-bottom: 4px;">Academic Year</label>
+              <input type="text" id="metaAcademicYear" class="input-control" value="2024-25" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); display: block; margin-bottom: 4px;">Subject / Course Name</label>
+              <input type="text" id="metaCourseName" class="input-control" value="PYTHON PROGRAMING" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); display: block; margin-bottom: 4px;">Class & Section</label>
+              <input type="text" id="metaClassSec" class="input-control" value="II/C" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); display: block; margin-bottom: 4px;">Semester</label>
+              <input type="text" id="metaSemester" class="input-control" value="III" />
+            </div>
+            <div>
+              <label style="color: var(--text-muted); display: block; margin-bottom: 4px;">Faculty Name</label>
+              <input type="text" id="metaFacultyName" class="input-control" value="Faculty Incharge" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Preview Switcher Tabs -->
+        <div style="display: flex; gap: 8px; margin-bottom: 1.5rem; justify-content: center;">
+          <button class="btn btn-primary report-tab-btn active" data-report="advanced">🌟 Advanced Learners Template (15 List Order)</button>
+          <button class="btn btn-secondary report-tab-btn" data-report="slow">⚠️ Slow Learners Template (15 List Order)</button>
+          <button class="btn btn-secondary report-tab-btn" data-report="comprehensive">📈 Comprehensive Cohort Report</button>
+        </div>
+
+        <!-- Document Live Paper Canvas with Page Splits -->
+        <div id="reportPaperPreview">
+          <!-- Populated via JS with distinct 3 A4 paper sheets -->
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts with Cache Busting -->
+  <script src="/static/js/three-scene.js?v=3.7.0"></script>
+  <script src="/static/js/charts.js?v=3.7.0"></script>
+  <script src="/static/js/app.js?v=3.7.0"></script>
+</body>
+</html>
