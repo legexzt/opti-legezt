@@ -2,6 +2,7 @@ import os
 import io
 import json
 import re
+import tempfile
 from typing import Dict, List, Any, Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response
 from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
@@ -49,7 +50,8 @@ CURRENT_SESSION = {
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 WORKSPACE_DIR = os.path.dirname(BASE_DIR)
-REPORTS_DIR = os.path.join(WORKSPACE_DIR, "generated_reports")
+# Use /tmp or system temp directory to prevent Read-Only file system errors on Serverless/Cloud
+REPORTS_DIR = os.path.join(tempfile.gettempdir(), "opti_reports")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 
@@ -270,10 +272,14 @@ async def prepare_download(req: ReportGenerateRequest):
         pdf_bytes = ExactAcademicReportGenerator.generate_pdf(rep_type, meta, students, req.statistics)
         docx_bytes = ExactAcademicReportGenerator.generate_docx(rep_type, meta, students)
         
-        with open(os.path.join(REPORTS_DIR, pdf_name), "wb") as f:
-            f.write(pdf_bytes)
-        with open(os.path.join(REPORTS_DIR, docx_name), "wb") as f:
-            f.write(docx_bytes)
+        try:
+            with open(os.path.join(REPORTS_DIR, pdf_name), "wb") as f:
+                f.write(pdf_bytes)
+            with open(os.path.join(REPORTS_DIR, docx_name), "wb") as f:
+                f.write(docx_bytes)
+        except Exception:
+            # Silently fallback to in-memory generation on read-only environments
+            pass
 
         return {
             "status": "success",
@@ -290,28 +296,35 @@ async def prepare_download(req: ReportGenerateRequest):
 @app.get("/download/{filename}")
 async def serve_download_file(filename: str):
     file_path = os.path.join(REPORTS_DIR, filename)
-    if not os.path.exists(file_path):
+    file_bytes = None
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "rb") as f:
+                file_bytes = f.read()
+        except Exception:
+            file_bytes = None
+            
+    if not file_bytes:
         rep_type = "slow" if "Slow" in filename else ("advanced" if "Advance" in filename else "comprehensive")
-        meta = CURRENT_SESSION["metadata"]
-        students = CURRENT_SESSION["classified_data"].get(f"{rep_type}_learners", CURRENT_SESSION["raw_students"])
+        meta = CURRENT_SESSION.get("metadata", {})
+        students = CURRENT_SESSION.get("classified_data", {}).get(f"{rep_type}_learners", CURRENT_SESSION.get("raw_students", []))
         if filename.endswith(".pdf"):
-            b = ExactAcademicReportGenerator.generate_pdf(rep_type, meta, students)
-            with open(file_path, "wb") as f: f.write(b)
+            file_bytes = ExactAcademicReportGenerator.generate_pdf(rep_type, meta, students)
         elif filename.endswith(".docx"):
-            b = ExactAcademicReportGenerator.generate_docx(rep_type, meta, students)
-            with open(file_path, "wb") as f: f.write(b)
+            file_bytes = ExactAcademicReportGenerator.generate_docx(rep_type, meta, students)
         elif filename.endswith(".xlsx"):
             import pandas as pd
             df = pd.DataFrame(students)
-            df.to_excel(file_path, index=False)
+            buf = io.BytesIO()
+            df.to_excel(buf, index=False)
+            file_bytes = buf.getvalue()
         else:
             raise HTTPException(status_code=404, detail="File not found")
 
     media_type = "application/pdf" if filename.endswith(".pdf") else ("application/vnd.openxmlformats-officedocument.wordprocessingml.document" if filename.endswith(".docx") else "application/octet-stream")
     
-    return FileResponse(
-        path=file_path,
-        filename=filename,
+    return Response(
+        content=file_bytes,
         media_type=media_type,
         headers={
             "Content-Disposition": f'attachment; filename="{filename}"'
@@ -340,16 +353,19 @@ async def download_direct(
         else:
             import pandas as pd
             df = pd.DataFrame(students)
-            df.to_excel(file_path, index=False)
-            with open(file_path, "rb") as f: file_bytes = f.read()
+            out_buf = io.BytesIO()
+            df.to_excel(out_buf, index=False)
+            file_bytes = out_buf.getvalue()
             media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
-        with open(file_path, "wb") as f:
-            f.write(file_bytes)
+        try:
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+        except Exception:
+            pass
 
-        return FileResponse(
-            path=file_path,
-            filename=filename,
+        return Response(
+            content=file_bytes,
             media_type=media_type,
             headers={
                 "Content-Disposition": f'attachment; filename="{filename}"'
